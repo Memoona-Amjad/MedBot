@@ -18,7 +18,6 @@ st.set_page_config(
 
 gen_ai.configure(api_key = decode_api_key("QUl6YVN5QXpvdTdPZjh3ckhfaU84QUtVLV9mRzZYUmVFUVNHcFYw") )
 
-# Function to translate roles between Gemini-Pro and Streamlit terminology
 def translate_role_for_streamlit(user_role):
     if user_role == "model":
         return "assistant"
@@ -97,7 +96,6 @@ for message in st.session_state.chat_session.history:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Capture user input
 user_prompt = st.chat_input("Ask your Query...")
 if user_prompt:
     st.markdown(f'<div class="user-message">{user_prompt}</div>', unsafe_allow_html=True)
