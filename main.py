@@ -16,7 +16,6 @@ st.set_page_config(
     layout="centered",  
 )
 
-
 gen_ai.configure(api_key = decode_api_key("QUl6YVN5QXpvdTdPZjh3ckhfaU84QUtVLV9mRzZYUmVFUVNHcFYw") )
 
 # Function to translate roles between Gemini-Pro and Streamlit terminology
@@ -39,13 +38,42 @@ system_message_options = {
     If any question asked 
     otherthan medical, say 'I donot have any information.'"""
 }
-st.title("👨🏻‍⚕️ Medibot your personal ChatBot")
 
+st.markdown("""
+    <style>
+    .user-message {
+        background-color: #cfd1d1;
+        border-radius: 15px;
+        padding: 10px;
+        margin: 5px;
+        text-align: right;
+        width: fit-content;
+        float: right;
+        clear: both;
+    }
+    .assistant-message {
+        background-color: #e0d1d1;
+        border-radius: 15px;
+        padding: 10px;
+        margin: 5px;
+        text-align: left;
+        width: fit-content;
+        float: left;
+        clear: both;
+    }
+    .chat-container {
+        max-width: 600px;
+        margin: auto;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+st.title("👨🏻‍⚕️ Medibot your personal ChatBot")
 
 selected_system_message = st.selectbox("Select Model Role", list(system_message_options.keys()), key="selected_system_message")
 system_message = system_message_options[selected_system_message]
 
-# Check if the system message has changed and reset chat session if it has
+# if the system message has changed reset chat session
 if "previous_system_message" not in st.session_state:
     st.session_state.previous_system_message = selected_system_message
 
@@ -53,20 +81,25 @@ if st.session_state.previous_system_message != selected_system_message:
     st.session_state.previous_system_message = selected_system_message
     st.session_state.chat_session = None
 
-# Initialize the chat session if not already done
+# initialize the chat session if not already done
 if "chat_session" not in st.session_state or st.session_state.chat_session is None:
     model = gen_ai.GenerativeModel(model_name='gemini-1.5-pro', system_instruction=system_message)
     st.session_state.chat_session = model.start_chat(history=[])
 
-# Display the chat history
+st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+
+# chat history
 for message in st.session_state.chat_session.history:
-    with st.chat_message(translate_role_for_streamlit(message.role)):
-        st.markdown(message.parts[0].text)
+    if translate_role_for_streamlit(message.role) == 'user':
+        st.markdown(f'<div class="user-message">{message.parts[0].text}</div>', unsafe_allow_html=True)
+    else:
+        st.markdown(f'<div class="assistant-message">{message.parts[0].text}</div>', unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
 
 # Capture user input
 user_prompt = st.chat_input("Ask your Query...")
 if user_prompt:
-    st.chat_message("user").markdown(user_prompt)
+    st.markdown(f'<div class="user-message">{user_prompt}</div>', unsafe_allow_html=True)
     gemini_response = st.session_state.chat_session.send_message(user_prompt)
-    with st.chat_message("assistant"):
-        st.markdown(gemini_response.text)
+    st.markdown(f'<div class="assistant-message">{gemini_response.text}</div>', unsafe_allow_html=True)
